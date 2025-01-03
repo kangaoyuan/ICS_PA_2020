@@ -40,14 +40,17 @@ function init() {
 
 case $1 in
   nemu)
-    init NJU-ProjectN/nemu ics2024 nemu true NEMU_HOME
+# I use 2020 version to nemu, which is suitable for x86
+    init NJU-ProjectN/nemu ics2020 nemu true NEMU_HOME
     ;;
   abstract-machine)
     init NJU-ProjectN/abstract-machine ics2024 abstract-machine true AM_HOME
-    init NJU-ProjectN/fceux-am ics2021 fceux-am false
+# I wanna git to track fceux-am
+    init NJU-ProjectN/fceux-am ics2021 fceux-am true
     ;;
   am-kernels)
-    init NJU-ProjectN/am-kernels ics2021 am-kernels false
+# I wanna git to track am-kernels
+    init NJU-ProjectN/am-kernels ics2021 am-kernels true
     ;;
   nanos-lite)
     init NJU-ProjectN/nanos-lite ics2021 nanos-lite true
