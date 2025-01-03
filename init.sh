@@ -11,10 +11,12 @@ function init() {
   while [ ! -d $1 ]; do
     git clone -b $version https://github.com/NJU-ProjectN/$1.git
   done
-  log="$1 `cd $1 && git log --oneline --no-abbrev-commit -n1`"$'\n'
-  rm -rf $1/.git
 
+  log="$1 `cd $1 && git log --oneline --no-abbrev-commit -n1`"$'\n'
+
+  rm -rf $1/.git
   git add -A $1
+# $'' is used for ANSI_C quoting to include special characters
   git commit -am "$1 $version initialized"$'\n\n'"$log"
 
   if [ $2 ] ; then
@@ -36,6 +38,7 @@ function init_no_git() {
   while [ ! -d $1 ]; do
     git clone -b $version https://github.com/NJU-ProjectN/$1.git
   done
+
   log="$1 `cd $1 && git log --oneline --no-abbrev-commit -n1`"$'\n'
 
   sed -i -e "/^\/$1/d" .gitignore
@@ -51,10 +54,12 @@ case $1 in
     ;;
   abstract-machine)
     init abstract-machine AM_HOME
-    init_no_git fceux-am
+    init fceux-am
+    #init_no_git fceux-am
     ;;
   am-kernels)
-    init_no_git am-kernels
+    init am-kernels
+    #init_no_git am-kernels
     ;;
   nanos-lite)
     init nanos-lite
