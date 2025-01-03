@@ -41,7 +41,16 @@ void reg_test() {
     assert(pc_sample == cpu.pc);
 }
 
-void isa_reg_display() {}
+void isa_reg_display() {
+    printf("$eip\t0x%08x\n", cpu.pc);
+    for (int i = R_EAX; i <= R_EDI; i++) {
+        printf("$%s\t0x%08x\t%08u\n", regsl[i], reg_l(i), reg_l(i));
+    }
+    printf("SF=%d\n", cpu.eflags.SF&1);
+	printf("ZF=%d\n", cpu.eflags.ZF&1);
+	printf("OF=%d\n", cpu.eflags.OF&1);
+    printf("CF=%d\n", cpu.eflags.CF&1);
+}
 
 word_t isa_reg_str2val(const char* s, bool* success) {
     if (!strcmp("pc", s) || !strcmp("eip", s)) {
