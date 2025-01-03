@@ -14,18 +14,20 @@ static const uint8_t img []  = {
 };
 
 static void restart() {
-  /* Set the initial instruction pointer. */
-  cpu.pc = PMEM_BASE + IMAGE_START;
+    /* Set the initial instruction pointer. */
+    cpu.cs = 0x8;
+    cpu.eflags.val = 0x2;
+    cpu.pc = PMEM_BASE + IMAGE_START;
 }
 
 void init_isa() {
-  /* Test the implementation of the `CPU_state' structure. */
-  void reg_test();
-  reg_test();
+    /* Test the implementation of the `CPU_state' structure. */
+    extern void reg_test();
+    reg_test();
 
-  /* Load built-in image. */
-  memcpy(guest_to_host(IMAGE_START), img, sizeof(img));
+    /* Load built-in image. */
+    memcpy(guest_to_host(IMAGE_START), img, sizeof(img));
 
-  /* Initialize this virtual computer system. */
-  restart();
+    /* Initialize this virtual computer system. */
+    restart();
 }

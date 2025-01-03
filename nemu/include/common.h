@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 #include <assert.h>
-#include <string.h>
+#include <string.h> // IWYU pragma: keep
 
 typedef uint8_t bool;
 

@@ -65,53 +65,62 @@ static uint64_t get_time() {
 
 /* Simulate how the CPU works. */
 void cpu_exec(uint64_t n) {
-  switch (nemu_state.state) {
-    case NEMU_END: case NEMU_ABORT:
-      printf("Program execution has ended. To restart the program, exit NEMU and run again.\n");
-      return;
-    default: nemu_state.state = NEMU_RUNNING;
-  }
+    switch (nemu_state.state) {
+    case NEMU_END:
+    case NEMU_ABORT:
+        printf("Program execution has ended. To restart the program, exit "
+               "NEMU and run again.\n");
+        return;
+    default:
+        nemu_state.state = NEMU_RUNNING;
+    }
 
-  uint64_t timer_start = get_time();
+    uint64_t timer_start = get_time();
 
-  for (; n > 0; n --) {
-    vaddr_t this_pc = cpu.pc;
+    for (; n > 0; n--) {
+        vaddr_t this_pc = cpu.pc;
 
-    /* Execute one instruction, including instruction fetch,
-     * instruction decode, and the actual execution. */
-    __attribute__((unused)) vaddr_t seq_pc = isa_exec_once();
+        /* Execute one instruction, including instruction fetch,
+         * instruction decode, and the actual execution. */
+        __attribute__((unused)) vaddr_t seq_pc = isa_exec_once();
 
-    difftest_step(this_pc, cpu.pc);
+        difftest_step(this_pc, cpu.pc);
 
-    g_nr_guest_instr ++;
+        g_nr_guest_instr++;
 
 #ifdef DEBUG
-    asm_print(this_pc, seq_pc - this_pc, n < MAX_INSTR_TO_PRINT);
+        asm_print(this_pc, seq_pc - this_pc, n < MAX_INSTR_TO_PRINT);
 
-    /* TODO: check watchpoints here. */
+        /* TODO: check watchpoints here. */
 #endif
 
 #ifdef HAS_IOE
-    extern void device_update();
-    device_update();
+        extern void device_update();
+        device_update();
 #endif
 
-    if (nemu_state.state != NEMU_RUNNING) break;
-  }
+        if (nemu_state.state != NEMU_RUNNING)
+            break;
+    }
 
-  uint64_t timer_end = get_time();
-  g_timer += timer_end - timer_start;
+    uint64_t timer_end = get_time();
+    g_timer += timer_end - timer_start;
 
-  switch (nemu_state.state) {
-    case NEMU_RUNNING: nemu_state.state = NEMU_STOP; break;
+    switch (nemu_state.state) {
+    case NEMU_RUNNING:
+        nemu_state.state = NEMU_STOP;
+        break;
 
-    case NEMU_END: case NEMU_ABORT:
-      Log("nemu: %s\33[0m at pc = " FMT_WORD "\n\n",
-          (nemu_state.state == NEMU_ABORT ? "\33[1;31mABORT" :
-           (nemu_state.halt_ret == 0 ? "\33[1;32mHIT GOOD TRAP" : "\33[1;31mHIT BAD TRAP")),
-          nemu_state.halt_pc);
-      // fall through
+    case NEMU_END:
+    case NEMU_ABORT:
+        Log("nemu: %s\33[0m at pc = " FMT_WORD "\n\n",
+            (nemu_state.state == NEMU_ABORT
+                 ? "\33[1;31mABORT"
+                 : (nemu_state.halt_ret == 0 ? "\33[1;32mHIT GOOD TRAP"
+                                             : "\33[1;31mHIT BAD TRAP")),
+            nemu_state.halt_pc);
+        // fall through
     case NEMU_QUIT:
-      monitor_statistic();
-  }
+        monitor_statistic();
+    }
 }

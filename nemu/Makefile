@@ -14,6 +14,7 @@ endif
 
 $(info Building $(ISA)-$(NAME)-$(ENGINE))
 
+
 INC_DIR += ./include ./src/engine/$(ENGINE)
 BUILD_DIR ?= ./build
 
@@ -52,6 +53,7 @@ $(error invalid DIFF. Supported: qemu kvm nemu)
 endif
 endif
 
+
 OBJ_DIR ?= $(BUILD_DIR)/obj-$(ISA)-$(ENGINE)$(SO)
 BINARY ?= $(BUILD_DIR)/$(ISA)-$(NAME)-$(ENGINE)$(SO)
 
@@ -85,8 +87,18 @@ $(OBJ_DIR)/%.o: src/%.c
 
 # Some convenient rules
 
-.PHONY: app run gdb clean run-env $(DIFF_REF_SO)
+.PHONY: app test run gdb clean run-env $(DIFF_REF_SO)
+
+ifdef TEST_EXPR
+CFLAGS += -DTEST_EXPR
+GEN_EXPR_CMD := $(MAKE) -C $(NEMU_HOME)/tools/gen-expr
+GEN_TEST_CASE := $(NEMU_HOME)/tools/gen-expr 1000 > input
+test: $(BINARG)
+	$(BINARY)
+endif
+
 app: $(BINARY)
+
 
 override ARGS ?= --log=$(BUILD_DIR)/nemu-log.txt
 override ARGS += --diff=$(DIFF_REF_SO)
