@@ -93,7 +93,7 @@ ifdef TEST_EXPR
 CFLAGS += -DTEST_EXPR
 GEN_EXPR_CMD := $(MAKE) -C $(NEMU_HOME)/tools/gen-expr
 GEN_TEST_CASE := $(NEMU_HOME)/tools/gen-expr 1000 > input
-test: $(BINARG)
+test: $(BINARY)
 	$(BINARY)
 endif
 
