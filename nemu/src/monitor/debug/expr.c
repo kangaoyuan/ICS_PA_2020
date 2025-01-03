@@ -346,6 +346,8 @@ void test_expr() {
 
     // Here loop is hard code, corresponding to the arg of gen-expr tool.
     for (int i = 0; i < 10000; i++) {
+        if(i == 10000)
+            printf("why?\n");
         bool     flag;
         unsigned ans, eval;
         char     expression[70000] = {0};
@@ -361,6 +363,5 @@ void test_expr() {
         else
             printf("\33[1;32m""correct %d""\33[0m\n", i);
     }
-    printf("ending");
     fclose(fp);
 }
