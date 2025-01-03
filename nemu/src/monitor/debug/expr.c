@@ -346,7 +346,7 @@ void test_expr() {
 
     // Here loop is hard code, corresponding to the arg of gen-expr tool.
     for (int i = 0; i < 10000; i++) {
-        if(i == 9999)
+        if(i == 1)
             printf("why?\n");
         bool     flag;
         unsigned ans, eval;
