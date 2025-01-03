@@ -1,18 +1,18 @@
-#include <stdint.h>
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include <stdint.h>
 #include <assert.h>
 #include <string.h>
 
 // this should be enough
 static char buf[65536] = {};
-static char code_buf[65536 + 128] = {}; // a little larger than `buf`
+static char code_buf[65536 + 1024] = {}; // a little larger than `buf`
 static char *code_format =
 "#include <stdio.h>\n"
 "#include <stdlib.h>\n"
 "#include <signal.h>\n"
-"void div_handler(int signal) {"
+"void div_handler(int singal) {"
 "  exit(-1);"
 "}"
 "int main() { "
@@ -22,72 +22,77 @@ static char *code_format =
 "  return 0; "
 "}";
 
-static int choose(int num){
+static inline int choose(int num){
     return rand() % num;
 }
 
-static void gen_ch(char c){
-    sprintf(buf+strlen(buf), "%c", c);
+static void gen_char(char a) {
+    sprintf(buf+strlen(buf), "%c", a);
     buf[strlen(buf)] = '\0';
 }
 
-static void gen_num(){
+static inline void gen_rand_num() {
     unsigned val = rand();
     sprintf(buf+strlen(buf), "%u", val);
+    buf[strlen(buf)] = 'U';
     buf[strlen(buf)] = '\0';
 }
 
-static void gen_rand_op(){
-    switch(choose(4)){
+static inline void gen_rand_op() {
+    const char* op = NULL;
+    switch (choose(4)) {
     case 0:
-        strcat(buf+strlen(buf), "+");
+        op = "*";
         break;
     case 1:
-        sprintf(buf+strlen(buf), "%s", "-");
+        op = "/";
         break;
     case 2:
-        strcat(buf+strlen(buf), "*");
+        op = "+";
         break;
     case 3:
-        sprintf(buf+strlen(buf), "%s", "/");
+        op = "-";
         break;
     }
+    strcat(buf + strlen(buf), op);
     buf[strlen(buf)] = '\0';
-}
+ }
 
-static inline void gen_rand_expr() {
-    if(choose(2))
-        gen_ch(' ');
+ static inline void gen_rand_expr() {
+     uint32_t space = choose(2);
+     for (int i = 0; i < space; ++i)
+         gen_char(' ');
+     if (strlen(buf) < 1000) {
+         switch (choose(3)) {
+         case 0:
+             gen_rand_num();
+             break;
+         case 1:
+             gen_char('(');
+             gen_rand_expr();
+             gen_char(')');
+             break;
+         default:
+             gen_rand_expr();
+             gen_rand_op();
+             gen_rand_expr();
+             break;
+         }
+     } else {
+         gen_rand_num();
+     }
+     buf[strlen(buf)] = '\0';
+ }
 
-    if(strlen(buf) < 1024){
-        switch (choose(3)) {
-        case 0:
-            gen_num();
-            break;
-        case 1:
-            gen_ch('(');
-            gen_rand_expr();
-            gen_ch(')');
-            break;
-        default:
-            gen_rand_expr();
-            gen_rand_op();
-            gen_rand_expr();
-            break;
-        }
-    }
-}
-
-int main(int argc, char* argv[]) {
-    int seed = time(0);
-    srand(seed);
-
+int main(int argc, char *argv[]) {
+    srand(time(NULL));
     int loop = 1;
     if (argc > 1) {
-        sscanf(argv[1], "%d", &loop);
+        int ret = sscanf(argv[1], "%d", &loop);
+        assert(ret == 1 && loop > 0);
     }
 
-    for (int i = 0; i < loop; i++) {
+    for (int i = 0; i < loop;) {
         memset(buf, 0, strlen(buf));
         gen_rand_expr();
 
@@ -98,18 +103,45 @@ int main(int argc, char* argv[]) {
         fputs(code_buf, fp);
         fclose(fp);
 
-        int ret = system("gcc /tmp/.code.c -o /tmp/.expr");
+        // One way to get rid of /0 error, which signal doesn't work in this case
+        int ret = system("gcc /tmp/.code.c -Wall -Werror -o /tmp/.expr");
         if (ret != 0)
             continue;
 
+
         fp = popen("/tmp/.expr", "r");
-        assert(fp != NULL);
+        if(!fp) {
+            perror("Error while opening the process");
+            return -1;
+        }
 
         int result;
-        fscanf(fp, "%d", &result);
-        assert(pclose(fp) != -1);
-        
+        ret = fscanf(fp, "%u", &result);
+        if (ret != 1) {
+            perror("Error while fscanf the process\n");
+            return -1;
+        }
 
+        ret = pclose(fp);
+        if (ret == -1) {
+            perror("Error while closing the process\n");
+            return -1;
+        }
+
+        /* Using signal mechanism doesn't work. */
+        //int status = pclose(fp);
+        //if (WIFEXITED(status)) {
+        //    if (WEXITSTATUS(status) == 136) {
+        //        continue;
+        //    }
+        //}
+
+        for (int i = 0; i < strlen(buf); i++) {
+            if (buf[i] == 'U')
+                buf[i] = ' ';
+        }
+
+        i++; // A little trick
         printf("result == %u, expr == %s\n", result, buf);
     }
     return 0;

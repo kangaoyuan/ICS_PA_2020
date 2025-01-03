@@ -361,5 +361,6 @@ void test_expr() {
         else
             printf("\33[1;32m""correct %d""\33[0m\n", i);
     }
+    printf("ending");
     fclose(fp);
 }
