@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
 
         int result;
         fscanf(fp, "%d", &result);
-        assert(pclose(fp) == -1);
+        assert(pclose(fp) != -1);
         
 
         printf("result == %u, expr == %s\n", result, buf);
