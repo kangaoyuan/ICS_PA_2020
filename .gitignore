@@ -2,7 +2,9 @@
 *
 !*/
 !/nemu/*
-!/nexus-am/*
+!/abstract-machine/*
+!/fceux-am/*
+!/am-kernels/*
 !/nanos-lite/*
 !/navy-apps/*
 !Makefile
